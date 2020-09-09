@@ -68,7 +68,6 @@ chains = 4
 options(
   width = 1000,
   mc.cores = min(chains, parallel::detectCores()))
-rstan_options(auto_write = TRUE)
 ```
 
 ```{r functions}
