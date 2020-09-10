@@ -32,7 +32,7 @@ output:
   fontsize: 10pt
 ---
 
-```{r set-options, echo=FALSE, cache=FALSE, warning=FALSE, message=FALSE}
+```{r set-options, include=F}
 library(knitr)
 opts_chunk$set(dev = 'pdf',
                comment="", 
@@ -56,13 +56,13 @@ knitr::knit_hooks$set(error = color_block('red'))
 knitr::knit_hooks$set(warning = color_block('orange'))
 ```
 
-```{r libraries, echo=FALSE}
+```{r libraries, include=FALSE}
 library(tidyverse)
 library(magrittr)
 library(broom)
 ```
 
-```{r constants}
+```{r constants, include=F}
 chains = 4
 
 options(
@@ -163,7 +163,7 @@ In this treatment-coded model:
  + the ConditionCrowded estimate tells us how much larger (or smaller) the threshold is for the treatment condition. In this case, this is the crowded condition. 
  + the sum of the intercept and the estimate for the coefficient for ConditionCrowded give us the model's prediction for the mean outcome of the treatment level.
  
-Let's visualize that by plotting the model's predictions against the raw data. R has functions for that, but I'm doing it more small-stepped here. First, let's have a look at the model's predictions, and attach. It's just a vector with as many elements as there are outcomes in the data we fit with the linear regression.
+We can convince ourselves that the above interpretation is corrrect by looking at the predictions of the model for each observation, and comparing them to the estimates for the intercept and the coefficient for CrowdedCondition. First, let's have a look at the model's predictions, and attach. It's just a vector with as many elements as there are outcomes in the data we fit with the linear regression.
 
 ```{r}
 fitted(l.treatment)
@@ -178,9 +178,11 @@ d %>%
   select(Subject, Condition, Threshold, fitted)
 ```
 
-And visualized:
+For the uncrowded condition, the fitted value is 1.525 ... the exact same as the intercept estimate. For the crowded condition, the fitted value is 2.101, which is 1.525 (the intercept estimate) + .576 (the estimate for the coefficient of ConditionCrowded). Noice!
 
-```{r}
+That is, our LM predicts the following means (black points) for the two conditions, compared to the data that the model was fit to:
+
+```{r, echo=F}
 d %>%
   ggplot(aes(x = Condition)) +
   geom_point(aes(y = Threshold, color = Subject), alpha = .5) +
@@ -190,12 +192,14 @@ d %>%
   theme_bw()
 ```
 
-### Question
+
+### Questions
 
  + How would you calculate the epsilon/residual for each observation from this data?
  + How could you calculate the residual sum of squares for this model from this data? 
  + Why does the model predict only two values?
  + We obtain the straightforward interpretation of the ConditionCrowded estimate only because we coded the treatment condition as 1, rather than, e.g., as 2. What would happen if we coded the treatment condition as 2? Would our estimate for the coefficient for ConditionCrowded change? What about the estimate of the intercept? Why?
+ + Would the predicted/fitted values of the model change if we change the coding?
 
 ## Deviation/sum/anova-coding
 
@@ -208,13 +212,37 @@ l.deviation = lm(Threshold ~ 1 + Condition, data = d)
 summary(l.deviation)
 ```
 
+In this deviation-coded model:
+
+ + the intercept estimate is now the predicted *overall mean* of the outcome.
+ + the estimate for the coefficient of Condition is the predicted difference between the two conditions. 
+ + the two conditions means are described as the sum of the intercept estimate +/- .5-times the estimate for the coefficient of Condition.
+
+Why do researchers used to ANOVA find this more intuitive? You'll sometimes here that it's nice that the intercept now corresponds to the mean, but the true convenience of this coding scheme will become apparent once we consider interactions below. It is under deviation-coding, that we can talk about *main effects* and *interactions* in the same sense as in an ANOVA. That's presumably also why some people call this coding scheme anova-coding. We'll get to that. But first some questions.
+
 ### Questions
 
  + What happens if we double the values we assign to each of the two deviation-coded conditions? What if we set them to -1000 vs. 1000? What changes and what doesn't? Why?
 
-```{r}
+```{r, echo = T}
 contrasts(d$Condition) = cbind("Crowded vs. Uncrowded" = c(1,-1))
 ```
+
+ + Are the predictions of any of these deviation-coded models different from each other?
+ + Are the predictions of any of these deviation-coded models different from the treatment-coded model presented in the previous section? Why?
+ + We obtain the intuitive interpretation of the intercept (as the predicted grand mean of the data) only because the data is ... what? (recall that the intercept is *always* the predicted value for the case when all other terms add up to zero). Conveniently, most datasets obtained from psychological experiments have this property---either exactly or at least approximately (after exclusions).
+
+
+# Interactions between binary factors and continuous predictors
+
+
+# Continuous predictors
+
+## Centering
+## Scaling 
+## Scaling by 2 standard deviations. Why?
+
+# Factors with more than two levels
 
 
 
