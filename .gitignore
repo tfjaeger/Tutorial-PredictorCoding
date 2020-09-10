@@ -1,6 +1,10 @@
 *.Rproj
 *.rds
+*.tex
+*.log
 .Rproj.user
 .Rhistory
 .RData
 .Ruserdata
+scripts/*_cache/*
+scripts/*_files/*
