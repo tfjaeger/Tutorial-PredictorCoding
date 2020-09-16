@@ -70,19 +70,13 @@ options(
   mc.cores = min(chains, parallel::detectCores()))
 ```
 
-```{r functions}
-```
 
 
 # Reading and assignments in *preparation* of this class
 
-Please make sure you have read *all* of Gelman \& Hill (2007, Ch 3 up to and incl. 4.5) as well as James et al. (2013, Ch 3.3 up to but *not* incl. 3.3.3). Read and *work through* this document. Write up your answers to all the questions. If there are a few questions, you cannot answer, elicit help on the slack channel. 
+Please make sure you have read *all* of Gelman \& Hill (2007, Ch 3 up to and incl. 4.5) as well as James et al. (2013, Ch 3.3 up to but *not* incl. 3.3.3). Then read and *work through* this document. We will use class to go through the important concepts and to address any questions that you have about the readings or the problem sets in this document. **Please note that this document is providing R code only.** Some of the steps described here might have less direct solutions in Matlab, so it is recommended that you start early. I have, however, tried to describe each step in a way that does not depend on R or Matlab.
 
-
-
-# Overview
-STATE THE PURPOSE OF THIS DOCUMENT.
-
+In this document, you will find sections labeled "Prepare for class". Please work through those examples and write up your answers. If there are a few questions, you cannot answer, elicit help on the slack channel. In addition, there are sections called "Discussion questions for class". Please think about these questions, but don't worry if you get stuck. These are some questions we can go through during class.
 
 
 
@@ -150,6 +144,10 @@ Studying FEMs during visual crowding within the foveola requires high-precision 
 ```{r load data, message=F}
 d = read_csv("../data/data_ClarkCrowding.csv") %>%
   mutate_at(c("Subject", "Condition"), factor)
+d %<>%
+  filter(Condition != "Fixation") %>%
+  na.omit() %>%
+  droplevels()
 d
 ```
 
@@ -336,7 +334,7 @@ We analyzed the data with a linear regression, using the function \texttt{lm} fr
 Now that we know how to code factors (or at least binary factor), we can combine continuous and categorical predictors in our model. We first show a simple 'additive' model, in which we assume that the effects of the categorical and continuous predictors are additive. Then we consider a model that also contains an interaction, allowing the two effects to be more or less than additive. **The models presented here merely serve the purpose of illustrating how we can fit, analyze, and interpret models with continuous and categorical predictors. The one degree of freedom we have in our model so far (Condition) already puts as at the maximum of the recommended degrees of freedom for 20 data points.** Including additional parameters, as we do below, increases the risk of overfitting the model to the data.
 
 
-## Does the diffusion constant affect threshold performance beyond the experimental condition?
+## Do both the diffusion constant and the crowdedness condition affect threshold performance?
 
 For example, let's test the effects of both Condition and DiffusionConstant. For simplicity's sake, we continue to use deviation coding for Condition:
 
@@ -382,8 +380,9 @@ We analyzed the data with a linear regression, using the function \texttt{lm} fr
  
 ### Discussion questions for class
 
- 4. Can we conclude from this model, and the fact that the two predictors are both significant, that the two effects are additive?
- 1. Can we conclude that DiffusionConstant has an effect in both crowdedness conditions?
+ 4. Can we conclude from this model, and the fact that the two predictors are both significant, that the two effects are additive? Why or why not?
+ 1. Can we conclude that DiffusionConstant has an effect in both crowdedness conditions? Why or why not?
+ 1. Can we conclude that DiffusionConstant had an independent effect beyond condition? Why or why not?
 
 
 
@@ -540,53 +539,26 @@ Note that we are not reporting the simple effects, since the interaction was not
 
 
 
+# Additional topics we can discuss in class
 
+## Coding of continuous predictors
+ + scaling (dividing continuous predictors through the standard deviation). Why is this done? What are the pros and cons? 
+ + scaling by dividing through two-times the predictors standard deviation (Gelman, 2008). Why is this done?
+ + non-linear transforms of continuous predictors (log-transforming, polynomials)? Why is this done? In what sense does the LM still make a linearity assumption?
 
-# Coding of continuous predictors
-common transformations that can make the model more interpretable (though sometimes at other costs).
+## Coding of factors with more than two levels
 
-## Centering
-re-establishes interpretation of intercept as grand mean, and meaning of main effects.
-
-```{r}
-d %<>%
-  mutate(across(where(is.numeric), list("c" = function(x) x - mean(x))))
-
-summary(lm(Threshold ~ 1 + Condition + DiffusionConstant_c, data = d))
+```{r, message=F}
+d.all = read_csv("../data/data_ClarkCrowding.csv") %>%
+  mutate_at(c("Subject", "Condition"), factor)
 ```
 
-## Scaling 
-effect size comparison
-
-## Scaling by 2 standard deviations. Why?
-
-## Non-linear transformations
-
-
-
-
-
-# Factors with more than two levels
-
-## Helmert coding
-
-## Sliding difference coding
-
-## Polynomial coding
-
-## Interactions
-What's shared with binary case, what's not?
-
-
-# Final considerations for continuous predictors
-
-## Non-linear transformation
-
-polynomials
-log
-
-Why is this still a *linear* model? What does the linearity assumption really mean? (linearity in coefficients)
-
+ + Testing hypotheses about the order of levels:
+   + Helmert coding
+   + sliding difference coding
+   + polynomial coding
+ + How do we add and interpret interactions with such multi-level factors?
+ 
 
 # Session info
 ```{r session_info, include=TRUE, echo=TRUE, results='markup'}
