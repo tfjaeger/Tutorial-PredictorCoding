@@ -235,16 +235,54 @@ contrasts(d$Condition) = cbind("Crowded vs. Uncrowded" = c(1,-1))
 
 # Interactions between binary factors and continuous predictors
 
+## Combining continuous and categorical predictors in an LM
+
+### Questions
+
+ + Note that the intercept in this model does *not* correspond to the grand mean, despite the fact that we used deviation-coding for the the only factor in the model. Why is that the case?
+
+## Adding interactions
+
+be clear that additivity still holds, but now with regard to interaction term
+
+compare to fitted separately on each subset of the data
+
+## Geometric interpretation
+
+## Simple effects
 
 # Continuous predictors
+common transformations that can make the model more interpretable (though sometimes at other costs).
 
 ## Centering
+re-establishes interpretation of intercept as grand mean, and meaning of main effects.
+
 ## Scaling 
+effect size comparison
+
 ## Scaling by 2 standard deviations. Why?
+
 
 # Factors with more than two levels
 
+## Helmert coding
 
+## Sliding difference coding
+
+## Polynomial coding
+
+## Interactions
+What's shared with binary case, what's not?
+
+
+# Final considerations for continuous predictors
+
+## Non-linear transformation
+
+polynomials
+log
+
+Why is this still a *linear* model? What does the linearity assumption really mean? (linearity in coefficients)
 
 
 # Session info
