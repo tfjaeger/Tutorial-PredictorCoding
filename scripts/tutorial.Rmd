@@ -238,9 +238,9 @@ d %>%
   select(Subject, Condition, Threshold, fitted)
 ```
 
-For the uncrowded condition, the fitted value is 1.525 ... the exact same as the intercept estimate. For the crowded condition, the fitted value is 2.101, which is 1.525 (the intercept estimate) + .576 (the estimate for the coefficient of ConditionCrowded). Noice!
+For the uncrowded condition, the fitted value is 1.525 ... the exact same as the intercept estimate. For the crowded condition, the fitted value is 2.101, which is 1.525 (the intercept estimate) + .576 (the estimate for the coefficient of ConditionCrowded). In other words, for all conditions and for all data points, the predicted/fitted value of the LM $\widehat{y_i} = intercept + slope * Condition_i = \beta_0 + \beta_{condition} x_{condition}$, where $x_{condition}$ is 1 for the crowded condition and 0 for the uncrowded condition. Noice!
 
-That is, our LM predicts the following means for the two conditions, compared to the data that the model was fit to:
+The following figure shows the data we entered into the LM, and the predictions of the LM.
 
 ```{r, echo=F, fig.cap="Size (in arcminutes) at which threshold performance (62.5\\% correct) was reached by crowding condition. Each color shows a separate subject. Black triangles show the predicted outcome of a linear model fit to the data.", fig.width=4, fig.height=4}
 d %>%
@@ -261,7 +261,10 @@ d %>%
  1. We obtain the straightforward interpretation of the ConditionCrowded estimate only because we coded the treatment condition as 1, rather than, e.g., as 2. What would happen if we coded the treatment condition as 2 (and the reference condition still as 0)? Would our estimate for the coefficient for ConditionCrowded change? What about the estimate of the intercept? Why? (Much of this can be answered by trying to change the coding)
  1. Would the predicted/fitted values of the model change if we change the coding to 2 vs. 0? Why?
 
+### Questions for discussion in class
 
+ 6. How could you calculate the $R^2$ value shown as part of the model output from just the predicted/fitted values and the original data? (cf. James et al., 2013, p. 70-71)
+ 
 
 
 ## Deviation/sum/anova-coding
@@ -432,9 +435,11 @@ This will *not* always be the case. In the next section, for example, we will se
 
 # Interactions between factors and continuous predictors
 
-Next, we expand the analysis further. We remove the additivity assumption. Or rather, the addidivity assumption still holds but we expand the model in a way that we are not assuming the our two predictors are additive. This is done by including an interaction between the two predictors. Here I show this for the case of one continuous predictor (DiffusionConstant) and one binary categorical predictor (Condition), but the same logic extends to interactions between multiple continuous or multiple categorical predictors, as well as interactions between interactions (e.g., three-way interactions, etc.). For the case of one continuous and one categorical predictor, the geometric interpretation of the model is that we now allow the two lines (corresponding to the continuous predictor's effect at the two levels of the categorical predictor) to not be parallel. And our question of whether the interaction is *significant* becomes the question whether the difference in the slope of the two lines is statistically different from zero.
+Next, we expand the analysis further. We remove the additivity assumption. Or rather, the addidivity assumption still holds but we expand the model in a way that we are not assuming the our two predictors are additive. This is done by including an interaction between the two predictors. Here I show this for the case of one continuous predictor (DiffusionConstant) and one binary categorical predictor (Condition), but the same logic extends to interactions between multiple continuous or multiple categorical predictors, as well as interactions between interactions (e.g., three-way interactions, etc.). Like for the remainder of this tutorial, we focus on the type of planned analysis typical for (or at least the idea of) experimental psychology. For that reason, we do not discuss considerations about when we should even consider an interaction (but see, for example, Harrell, 2001 for insightful discussion, as well as Gelman \& Hill, 2007, p. 36).^[The short of those considerations is that introducing additional complexity (degrees of freedom) increases the risk of overfitting to the data, and with it the risk of spurious/unreliable conclusions. It is thus advisable to include additional complexity in the model only if is is motivated theoretically, by previous work, or other a priori considerations. Another specific recommendation you'll see often is to only include interactions if all their components are also included in the model, unless there is a good theoretical reason to do otherwise. These recommendations are not specific to the LM.]
 
-We can ask this question by adding a new predictor to the model that is the *product* of the two predictors. We then ask whether this new predictor has a non-zero effect, i.e., we ask whether the coefficient for this new predictor is different from zero. In R, the regression formula for this model is written as (where the colon is the interaction operator):
+For the case of one continuous and one categorical predictor, the geometric interpretation of the model is that we now allow the two lines (corresponding to the continuous predictor's effect at the two levels of the categorical predictor) to not be parallel. And our question of whether the interaction is *significant* becomes the question whether the difference in the slope of the two lines is statistically different from zero.
+
+We can ask this question by adding a new predictor to the model that is the *product* of the two predictors (cf. Gelman \& Hill, 2007, p. 34-36; James et al., 2013, p. 87-90). We then ask whether this new predictor has a non-zero effect, i.e., we ask whether the coefficient for this new predictor is different from zero. In R, the regression formula for this model is written as (where the colon is the interaction operator):
 
 $$ Threshold \sim 1 + Condition + DiffusionConstant + Condition:DiffusionConstant$$
 
@@ -451,14 +456,14 @@ Just like, e.g., factor coding implicit creates an additional numerical variable
 
 ## Do the effects of condition and difficusion constant interact?
 
-Now we can fit the new LM with the interaction, and look at the summary of results. We will use the centered DiffusionConstant for this model---i.e., we'll fit the model $ Threshold \sim 1 + Condition*DiffusionConstant_c$:
+Now we can fit the new LM with the interaction, and look at the summary of results. We will use the centered DiffusionConstant for this model---i.e., we'll fit the model $ Threshold \sim 1 + Condition*DiffusionConstant_c$. For this model, we can refer to the effect of condition as the "*main* effect" of condition (roughyl speaking, the overall, or mean, effect of condition). If we didn't center the diffusion constant---and more generally, if there were other uncentered variables in the model---the effect of of condition would not be conventionally referred to as main effect.
 
 ```{r}
 l.interaction = lm(Threshold ~ 1 + Condition * DiffusionConstant_c, data = d)
 summary(l.interaction)
 ```
 
-The first thing we can notice is that the $R^2$ of the model has barely increased. In other words, adding the interaction doesn't explain much more variance in the outcome. Indeed, the adjusted $R^2$ (which is the $R^2$ corrected for the complexity of the model) has *de*creased. With this in mind, it is not surprising that the interaction does not have a significant effect. In short, we cannot reject the null hypothesis that the effect of the diffusion constant on the threshold is identical for crowded and uncrowded condition. This is also in line with a visualization of the data:
+The first thing we can notice is that the $R^2$ of the model has barely increased. In other words, adding the interaction doesn't explain much more variance in the outcome. Indeed, the adjusted $R^2$ (which is the $R^2$ corrected for the complexity of the model) has *de*creased. With this in mind, it is not surprising that the interaction does not have a significant effect. In short, we cannot reject the null hypothesis that the effect of the diffusion constant on the threshold is identical for crowded and uncrowded condition. This is also in line with a visualization of the data and the model:
 
 ```{r, echo=F, fig.cap="Size (in arcminutes) at which threshold performance (62.5\\% correct) was reached by diffusion constant (centered) and crowding condition. Each color shows a separate subject. Black lines show the predicted outcome of a linear model fit to the data.", fig.width=4.5, fig.height=4}
 d %>%
@@ -534,7 +539,7 @@ This re-parameterization does not change the predicted/fitted responses of the m
 We analyzed the data with a linear regression, using the function \texttt{lm} from the \texttt{base} package (citation with version) of the software \texttt{R} (citation with version). We calculated each subject's mean thresholds for the crowded and uncrowded condition. These 20 threshold values were regressed against condition (deviation-coded: .5 = *crowded* vs. -.5 = *uncrowded*), the diffusion constant **(centered), and their interaction**. We found a statistically significant **main** effect of condition ($\widehat{\beta}=.442, t=4.697, p<.01$), so that subjects reach threshold performance at larger sizes in the crowded condition, compared to the uncrowded condition. We also found a statistically significant effect of the diffusion constant ($\widehat{\beta}=.037, t=5.846, p<.01$), so that larger diffusion constants required larger sizes to achieve threshold performance. **The interaction was not significant ($\widehat{\beta} = 0.009, p > .5$).**
 \color{black}
 
-Note that we are not reporting the simple effects, since the interaction was not significant, but whether you also report the simple effect this is up to you and also differs between fields.
+
 
 
 
@@ -544,7 +549,7 @@ Note that we are not reporting the simple effects, since the interaction was not
 ## Coding of continuous predictors
  + scaling (dividing continuous predictors through the standard deviation). Why is this done? What are the pros and cons? 
  + scaling by dividing through two-times the predictors standard deviation (Gelman, 2008). Why is this done?
- + non-linear transforms of continuous predictors (log-transforming, polynomials)? Why is this done? In what sense does the LM still make a linearity assumption?
+ + non-linear transforms of continuous predictors (log-transforming, polynomials)? Why is this done? In what sense does the LM still make a linearity assumption? (see also James et al., 2013, p. 90-92)
 
 ## Coding of factors with more than two levels
 
@@ -553,7 +558,7 @@ d.all = read_csv("../data/data_ClarkCrowding.csv") %>%
   mutate_at(c("Subject", "Condition"), factor)
 ```
 
- + Testing hypotheses about the order of levels:
+ + Testing hypotheses about the order of levels (see also James et al., 2013, p. 85):
    + Helmert coding
    + sliding difference coding
    + polynomial coding
