@@ -186,7 +186,7 @@ For a binary factor, we thus have one contrast that is a vector with two values.
 contrasts(d$Condition)
 ```
 
-And, each time a regression function is called, this allows R to *implicilty* create a new column in our data that is the numerical translation of the Condition variable. Thus a model like
+And, each time a regression function is called, this allows R to *implicitly* create a new column in our data that is the numerical translation of the Condition variable. Thus a model like
 
 $$ Threshold \sim 1 + Condition $$
 
@@ -201,6 +201,14 @@ d %>%
   mutate(ConditionUncrowded = ifelse(Condition == "Uncrowded", 1, 0))
 ```
 
+Remember the *model matrix* $X$ from above? In R (and probably Matlab), specifying an LM formula implicitly creates a model matrix $X$ from the data, and the function lm is using that model matrix (and the column of outcomes, $\mathbf{y}$) to fit the linear model. Looking at the model matrix can be a powerful tool in understanding factor coding. For example, prior to specifying any factor coding, the model matrix for the above model would be:
+
+```{r, echo=T}
+model.matrix( ~ 1 + Condition, data = d)
+```
+
+Notice the implicitly created column of 1s for the intercept 'predictor' (i.e., $x_0$ is the constant 1). We also see that the first 10 rows of the data are coded as 1 for Condition and the second 10 rows as 0. That's because the first 10 rows are from the uncrowded condition (see above). Below, I'll show the model matrix for each of the coding examples. This should also help you translate the examples into another statistic program: if push comes to shove, you can always manually create the variables shown in the model matrix and then hand that manually created data to the model-fitting function of your program.
+
 ## Treatment/dummy-coding
 
 The default in many statistics programs is treatment-coding, like in the example we just went through. Under this coding scheme, we contrast all other condition against a baseline (or "reference") condition. Since the default is in this case somewhat counter-intuitive---it's more intuitive to think of visual *crowding* as the treatment---we set define our own treatment coding:
@@ -208,6 +216,12 @@ The default in many statistics programs is treatment-coding, like in the example
 ```{r}
 contrasts(d$Condition) = cbind("Crowded" = c(1,0))
 contrasts(d$Condition)
+```
+
+With this change in contrast, the model matrix also changes. Now the first 10 rows of the data are coded as 0 for the condition predictor, and the second rows are coded as 1.
+
+```{r, echo=T}
+model.matrix( ~ 1 + Condition, data = d)
 ```
 
 Now we can fit the LM and summarize that *fit*:
@@ -267,13 +281,19 @@ d %>%
  
 
 
-## Deviation/sum/anova-coding
+## Effect/deviation/sum/anova-coding
 
-While treatment-coding is the default in the regression world, it is actually rarely used in experimental psychology, brain imaging, or related fields that use factorial/balanced designs. Rather, we typically code our data in a different way, because it changes the interpretation of the intercept in ways that researchers that are used to ANOVA tend to find more intuitive. This alternative is called deviation/sum/anova-coding:
+While treatment-coding is the default in the regression world, it is actually rarely used in experimental psychology, brain imaging, or related fields that use factorial/balanced designs. Rather, we typically code our data in a different way, because it changes the interpretation of the intercept in ways that researchers that are used to ANOVA tend to find more intuitive. This alternative is called effect/deviation/sum/anova-coding:
 
 ```{r}
 contrasts(d$Condition) = cbind("Crowded.vs.Uncrowded" = c(.5,-.5))
 contrasts(d$Condition)
+```
+
+With this change in contrast, the model matrix also changes:
+
+```{r, echo=T}
+model.matrix( ~ 1 + Condition, data = d)
 ```
 
 Let's refit the model with this newly coded factor:
@@ -451,7 +471,14 @@ or shorter (where X1 * X2 is a shorthand for the full-factorial combination of X
 
 $$ Threshold \sim 1 + Condition*DiffusionConstant$$
 
-Just like, e.g., factor coding implicit creates an additional numerical variable that encodes the factor's information, the interaction operator implicitly creates a new variable in our data that is the product if the (numerically coded) factor Condition and the continuous predictor DiffusionConstant.
+Just like, e.g., factor coding implicit creates an additional numerical variable that encodes the factor's information, the interaction operator implicitly creates a new variable in our data that is the product if the (numerically coded) factor Condition and the continuous predictor DiffusionConstant. To see this, we again look at the model matrix:
+
+With this change in contrast, the model matrix also changes:
+
+```{r, echo=T}
+model.matrix( ~ 1 + Condition * DiffusionConstant, data = d)
+```
+
 
 
 ## Do the effects of condition and difficusion constant interact?
@@ -524,7 +551,13 @@ When we have interactions in our model, we might also want to report the *simple
 
 **However, a signficant interaction does *not* tell us *how* the interacting effects depends on each other.** For example, for the present case a significant interaction could indicate that there is a significant positive relation between the diffusion constant and threshold in one condition and a significant negative relation in the other condition; but it could also indicate that there is a significant positive relation in one condition and a non-significant relation in the other; or even that the relation is significant and positive in both conditions but the size of the effect of diffusion constant differs between condition (and so on). To address which of those scenarios holds, it is necessary to conduct additional analyses. The standard approach to that is called simple effect analyses.
 
-In this approach, we do not split the data into the two conditions and fit separate models ($Threshold \sim 1 + DiffusionConstant$) to it. Rather, we use all of the data we have and simple re-parameterize/recode the same LM we have already fit to read out the simple effects of DiffusionConstant at each level of condition. In R, this can be done with the convenient embedding operator /:
+In this approach, we do not split the data into the two conditions and fit separate models ($Threshold \sim 1 + DiffusionConstant$) to it. Rather, we use all of the data we have and simple re-parameterize/recode the same LM we have already fit to read out the simple effects of DiffusionConstant at each level of condition. In R, this can be done with the convenient embedding operator /. Here's the model matrix resulting from this operator does for the present case:
+
+```{r, echo=T}
+model.matrix( ~ 1 + Condition / DiffusionConstant_c, data = d)
+```
+
+and here is the resulting LM:
 
 ```{r}
 summary(lm(Threshold ~ 1 + Condition / DiffusionConstant_c, data = d))
@@ -558,11 +591,12 @@ d.all = read_csv("../data/data_ClarkCrowding.csv") %>%
   mutate_at(c("Subject", "Condition"), factor)
 ```
 
- + Testing hypotheses about the order of levels (see also James et al., 2013, p. 85):
-   + Helmert coding
-   + sliding difference coding
-   + polynomial coding
- + How do we add and interpret interactions with such multi-level factors?
+ + Testing hypotheses about the order of levels (see also James et al., 2013, p. 85; a nice summary of various coding schemes and how to make your own for R can be found at https://stats.idre.ucla.edu/r/library/r-library-contrast-coding-systems-for-categorical-variables/#:~:text=2%20Simple%20Coding&text=The%20difference%20in%20the%20regression,the%20mean%20of%20cell%20means.?l):
+   + Helmert coding (or reverse Helmert coding)
+   + simple coding
+   + sliding difference coding (forward/backward)
+   + polynomial coding (or orthogonal polynomial coding)
+ + How do we add and interpret interactions with such multi-level factors? A nice detailed introduction that goes over the interpretation for the different coefficients can be found at https://stats.idre.ucla.edu/other/mult-pkg/faq/general/faq-how-do-i-interpret-the-coefficients-of-an-effect-coded-variable-involved-in-an-interaction-in-a-regression-model/. R provides many packages that help with the interpretation of higher-order interactions. One is phia (https://cran.r-project.org/web/packages/phia/index.html).
  
 
 # Session info
