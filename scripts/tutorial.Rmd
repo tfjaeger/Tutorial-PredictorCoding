@@ -240,7 +240,9 @@ In this treatment-coded model:
 We can convince ourselves that the above interpretation is correct by looking at the predictions of the model for each observation, and comparing them to the estimates for the intercept and the coefficient for ConditionCrowded. First, let's have a look at the model's predictions, and attach. It's just a vector with as many elements as there are outcomes in the data we fit with the linear regression.
 
 ```{r}
-fitted(l.treatment)
+# Just to make sure this shows up across two lines of output =)
+fitted(l.treatment)[1:10]
+fitted(l.treatment)[11:20]
 ```
 
 Note that the model only predicts two different values---one for the crowded condition and one for the uncrowded condition. This becomes apparent when we attach the fitted/predicted values to the data.frame. Here I'm only showing the Subject, Condition, Threshold, and fitted values:
