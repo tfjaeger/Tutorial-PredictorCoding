@@ -586,6 +586,12 @@ We analyzed the data with a linear regression, using the function \texttt{lm} fr
  + scaling by dividing through two-times the predictors standard deviation (Gelman, 2008). Why is this done?
  + non-linear transforms of continuous predictors (log-transforming, polynomials)? Why is this done? In what sense does the LM still make a linearity assumption? (see also James et al., 2013, p. 90-92)
 
+### Discussion questions for class
+
+ + Can the predictions of models differ depending on the transform of a continuous variable?
+ + Can the conclusions we draw about effects differ depending on the transform of a continuous variable?
+
+
 ## Coding of factors with more than two levels
 
 ```{r, message=F}
@@ -594,12 +600,47 @@ d.all = read_csv("../data/data_ClarkCrowding.csv") %>%
 ```
 
  + Testing hypotheses about the order of levels (see also James et al., 2013, p. 85; a nice summary of various coding schemes and how to make your own for R can be found at https://stats.idre.ucla.edu/r/library/r-library-contrast-coding-systems-for-categorical-variables/#:~:text=2%20Simple%20Coding&text=The%20difference%20in%20the%20regression,the%20mean%20of%20cell%20means.?l):
-   + Helmert coding (or reverse Helmert coding)
+   + treatment coding
+   
+```{r, echo=T}
+levels(d.all$Condition)
+contrasts(d.all$Condition) = cbind(
+  "C" = c(1, 0, 0),
+  "U" = c(0, 0, 1))
+model.matrix( ~ 1 + Condition * Speed, data = d.all)
+```
+
    + simple coding
+   + effect ("anova") coding
+   
+```{r, echo=T}
+contrasts(d.all$Condition) = cbind(
+  "C.vs.F" = c(.5,-.5, 0),
+  "U.vs.F" = c(0,-.5, .5))
+model.matrix( ~ 1 + Condition * Speed, data = d.all)
+```
+
+   + Helmert coding (or reverse Helmert coding)
+
+```{r}
+contrasts(d.all$Condition) = contr.helmert(3)
+model.matrix( ~ 1 + Condition * Speed, data = d.all)
+```
    + sliding difference coding (forward/backward)
    + polynomial coding (or orthogonal polynomial coding)
+
+```{r}
+contrasts(d.all$Condition) = contr.poly(3)
+model.matrix( ~ 1 + Condition * Speed, data = d.all)
+```
+
  + How do we add and interpret interactions with such multi-level factors? A nice detailed introduction that goes over the interpretation for the different coefficients can be found at https://stats.idre.ucla.edu/other/mult-pkg/faq/general/faq-how-do-i-interpret-the-coefficients-of-an-effect-coded-variable-involved-in-an-interaction-in-a-regression-model/. R provides many packages that help with the interpretation of higher-order interactions. One is phia (https://cran.r-project.org/web/packages/phia/index.html).
  
+### Discussion questions for class
+
+ + Can the predictions of models differ depending on the which of the above coding schemes is used for the 3-way factor *condition*?
+ + Can the conclusions we draw about effects differ depending on the which of the above coding schemes is used for the 3-way factor *condition*?
+ + Does the interpretation of the interaction with the predictor *speed* change depending on the which of the above coding schemes is used for the 3-way factor *condition*?
 
 # Session info
 ```{r session_info, include=TRUE, echo=TRUE, results='markup'}
