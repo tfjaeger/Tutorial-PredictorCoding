@@ -509,6 +509,9 @@ d %>%
   theme_bw()
 ```
 
+In the LM with the interaction, the main effect of diffusion constant is the *average* effect of the diffusion constant across the two conditions (because we effect-coded and thus centered condition). The main effect of condition is the *average* across all values of the diffusion constant (because we centered the diffusion constant, so that the effect of condition is the predicted distance between the lines when the centered diffusion constant is zero, i.e., at the mean of the diffusion constant). The interaction tells us how much the slope of the diffusion constant differs between the conditions. Specifically, the slope of the diffusion constant for the crowded condition is predicted to be + 0.008665 * 0.05 = + 0.0043325 larger than the main effect of the diffusion constant (0.032167 + 0.0043325), whereas the slope of the diffusion constant for the uncrowded condition is predicted to be + 0.008665 * -0.05 = - 0.0043325 smaller than the main effect of the diffusion constant (0.032167 - 0.0043325).
+
+
 Note also that the intercept estimate in the interaction model is not identical to the one from the combined model. This seems to contradict what we learned above, that the intercept estimate is the model's prediction for the grand mean if all predictors are centered. Note, however, that we did not center the interaction and, indeed, the mean of the product of condition and DiffusionConstant is *not* 0, but rather
 `r d %>% summarise(mean = mean(DiffusionConstant_c * ifelse(Condition == "Crowded", .5, -.5))) %>% round(3)`. There's thus no contradiction to the generalization that the intercept is the model's predicted overall mean outcome when all variables are centered.^[Since the diffusion constant is not a variable that we controlled directly by our design, it can have different means for the two conditions even after centering it, and indeed it does (centering only guarantees that the *overall* mean of the diffusion constant is 0): In other words, the diffusion constant is itself affected by the condition and, as a consequence, condition and DiffusionConstant are correlated. Here we don't explore this further, but we will return to questions about collinearity later in the semester.]
 
@@ -599,7 +602,8 @@ d.all = read_csv("../data/data_ClarkCrowding.csv") %>%
   mutate_at(c("Subject", "Condition"), factor)
 ```
 
- + Testing hypotheses about the order of levels (see also James et al., 2013, p. 85; a nice summary of various coding schemes and how to make your own for R can be found at https://stats.idre.ucla.edu/r/library/r-library-contrast-coding-systems-for-categorical-variables/#:~:text=2%20Simple%20Coding&text=The%20difference%20in%20the%20regression,the%20mean%20of%20cell%20means.?l):
+ + Testing hypotheses about the order of levels (see also James et al., 2013, p. 85; a nice summary of various coding schemes and how to make your own for R can be found at \url{https://stats.idre.ucla.edu/r/library/r-library-contrast-coding-systems-for-categorical-variables/}). Here are some examples, using all three levels from the complete data---i.e., including the "fixation" condition:
+ 
    + treatment coding
    
 ```{r, echo=T}
@@ -634,7 +638,7 @@ contrasts(d.all$Condition) = contr.poly(3)
 model.matrix( ~ 1 + Condition * Speed, data = d.all)
 ```
 
- + How do we add and interpret interactions with such multi-level factors? A nice detailed introduction that goes over the interpretation for the different coefficients can be found at https://stats.idre.ucla.edu/other/mult-pkg/faq/general/faq-how-do-i-interpret-the-coefficients-of-an-effect-coded-variable-involved-in-an-interaction-in-a-regression-model/. R provides many packages that help with the interpretation of higher-order interactions. One is phia (https://cran.r-project.org/web/packages/phia/index.html).
+ + How do we add and interpret interactions with such multi-level factors? A nice detailed introduction that goes over the interpretation for the different coefficients can be found at \url{https://stats.idre.ucla.edu/other/mult-pkg/faq/general/faq-how-do-i-interpret-the-coefficients-of-an-effect-coded-variable-involved-in-an-interaction-in-a-regression-model/}. R provides many packages that help with the interpretation of higher-order interactions. One is phia (\url{https://cran.r-project.org/web/packages/phia/index.html}).
  
 ### Discussion questions for class
 
