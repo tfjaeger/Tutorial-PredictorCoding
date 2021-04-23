@@ -364,6 +364,7 @@ Now that we know how to code factors (or at least binary factor), we can combine
 For example, let's test the effects of both Condition and DiffusionConstant. For simplicity's sake, we continue to use deviation coding for Condition:
 
 $$ Threshold \sim 1 + Condition + DiffusionConstant $$
+
 What happens when we include both of these predictors in the LM?
 
 ```{r}
@@ -463,7 +464,7 @@ For the case of one continuous and one categorical predictor, the geometric inte
 
 We can ask this question by adding a new predictor to the model that is the *product* of the two predictors (cf. Gelman \& Hill, 2007, p. 34-36; James et al., 2013, p. 87-90). We then ask whether this new predictor has a non-zero effect, i.e., we ask whether the coefficient for this new predictor is different from zero. In R, the regression formula for this model is written as (where the colon is the interaction operator):
 
-$$ Threshold \sim 1 + Condition + DiffusionConstant + Condition:DiffusionConstant$$
+$$ Threshold \sim 1 + Condition + DiffusionConstant + Condition:DiffusionConstant $$
 
 which essentially runs the following model (where I is the identity operator, which return x for x):
 
@@ -485,7 +486,11 @@ model.matrix( ~ 1 + Condition * DiffusionConstant, data = d)
 
 ## Do the effects of condition and difficusion constant interact?
 
-Now we can fit the new LM with the interaction, and look at the summary of results. We will use the centered DiffusionConstant for this model---i.e., we'll fit the model $ Threshold \sim 1 + Condition*DiffusionConstant_c$. For this model, we can refer to the effect of condition as the "*main* effect" of condition (roughyl speaking, the overall, or mean, effect of condition). If we didn't center the diffusion constant---and more generally, if there were other uncentered variables in the model---the effect of of condition would not be conventionally referred to as main effect.
+Now we can fit the new LM with the interaction, and look at the summary of results. We will use the centered DiffusionConstant for this model---i.e., we'll fit the model 
+
+$$Threshold \sim 1 + Condition * DiffusionConstant_c$$
+
+For this model, we can refer to the effect of condition as the "*main* effect" of condition (roughyl speaking, the overall, or mean, effect of condition). If we didn't center the diffusion constant---and more generally, if there were other uncentered variables in the model---the effect of of condition would not be conventionally referred to as main effect.
 
 ```{r}
 l.interaction = lm(Threshold ~ 1 + Condition * DiffusionConstant_c, data = d)
